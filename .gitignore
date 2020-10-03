@@ -125,6 +125,9 @@ dmypy.json
 
 # App Settings
 settings
+settings.dat
+settings.bak
+settings.dir
 
 # Frontend builds
 frontend/

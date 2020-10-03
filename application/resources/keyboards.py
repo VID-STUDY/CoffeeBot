@@ -45,9 +45,8 @@ _order_location_keyboard_ru.add(get_string('go_back'))
 _keyboards_ru['order.address'] = _order_location_keyboard_ru
 
 _order_payment_keyboard_ru = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-_order_payment_keyboard_ru.add(from_order_payment_method(Order.PaymentMethods.CASH, 'ru'),
-                               from_order_payment_method(Order.PaymentMethods.PAYME, 'ru'),
-                               get_string('go_back'), get_string('go_to_menu'))
+_order_payment_keyboard_ru.add(from_order_payment_method(Order.PaymentMethods.CASH, 'ru'))
+_order_payment_keyboard_ru.add(get_string('go_back'), get_string('go_to_menu'))
 _keyboards_ru['order.payment'] = _order_payment_keyboard_ru
 
 _order_confirmation_keyboard_ru = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)

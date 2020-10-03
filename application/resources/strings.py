@@ -136,7 +136,6 @@ def from_order(order: Order, language: str, total: int) -> str:
         order_content += '\n\n'
         order_content += '<i>{}</i>'.format(get_string('order.delivery_price_helper', language))
     order_content += '\n\n'
-    order_content += get_string('order.delivery_time', language)
     return order_content
 
 
@@ -164,7 +163,7 @@ def from_order_notification(order: Order, total_sum):
         counter += 1
         group_content = '\n'
         group_content += order_item_tmpl.format(counter=counter,
-                                               name=oi.dish.description,
+                                               name=oi.dish.name,
                                                count=oi.count,
                                                price=_format_number(oi.dish.price),
                                                sum=_format_number(oi.dish.price * oi.count))

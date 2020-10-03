@@ -127,9 +127,10 @@ def set_address_by_map_location(user_id: int, map_location: tuple) -> bool:
 
 
 def set_phone_number(user_id: int, phone_number: str) -> Order:
+    current_user = userservice.get_user_by_id(user_id)
     current_order = get_current_order_by_user(user_id)
-    current_order.phone_number = phone_number
-    userservice.set_user_phone_number(user_id, phone_number)
+    current_order.phone_number = current_user.phone_number
+    userservice.set_user_phone_number(user_id, current_user.phone_number)
     db.session.commit()
     return current_order
 
