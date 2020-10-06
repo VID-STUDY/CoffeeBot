@@ -31,6 +31,7 @@
                                 <th>Юзернэйм</th>
                                 <th>Номер телефона</th>
                                 <th>Дата регистрации</th>
+                                <th>Всего заказов</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
@@ -60,6 +61,11 @@
                                             {{ user.registration_date|datetime(convert_from_utc=True) }}
                                         {% else %}
                                             UNK
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.count_orders %}
+                                            {{ user.count_orders }}
                                         {% endif %}
                                     </td>
                                     <td>

@@ -79,5 +79,5 @@
     "my_location": "\uD83D\uDDFA Моя локация",
     "sum": "сум",
     "usd": "$",
-    "all_coffee": "Всего заказано: {}"
+    "all_coffee": "<b>Всего заказано:</b> <code>{}</code>\n{}"
 }
