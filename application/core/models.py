@@ -43,6 +43,7 @@ class User(db.Model):
     confirmed = db.Column(db.Boolean)
     telegram_id = db.Column(db.Integer)
     registration_date = db.Column(db.DateTime)
+    count_orders = db.Column(db.Integer, default=0)
     cart = db.relationship('CartItem', lazy='dynamic', backref='user', cascade='all, delete-orphan')
     orders = db.relationship('Order', lazy='dynamic', backref='customer', cascade='all, delete-orphan')
     comments = db.relationship('Comment', lazy='dynamic', backref='author')
@@ -150,8 +151,10 @@ class Dish(db.Model):
 
     def get_full_name(self):
         return self.category.get_nested_names() + ' |=>| ' + self.name
+
     def get_full_name_uz(self):
         return self.category.get_nested_names_uz() + ' |=>| ' + self.name_uz
+
 
 class Order(db.Model):
     """

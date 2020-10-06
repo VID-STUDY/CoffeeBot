@@ -19,6 +19,10 @@ def get_user_by_telegram_id(telegram_id: int):
     return User.query.get(telegram_id)
 
 
+#def get_count_by_id(user_id):
+#    return User.query.get()
+
+
 def get_user_by_token(token: str):
     return User.query.filter(User.token == token).first()
 

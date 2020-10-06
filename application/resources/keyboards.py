@@ -19,8 +19,7 @@ _keyboards_ru['welcome.language'] = _welcome_language
 
 _main_menu_ru = ReplyKeyboardMarkup(resize_keyboard=True)
 _main_menu_ru.add(get_string('main_menu.make_order'))
-_main_menu_ru.add(get_string('main_menu.send_comment'))
-_main_menu_ru.add(get_string('main_menu.language'))
+_main_menu_ru.add(get_string('main_menu.profile'))
 _keyboards_ru['main_menu'] = _main_menu_ru
 
 _go_back_ru = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -110,14 +109,9 @@ def get_keyboard(key, language='ru'):
         raise Exception('Invalid language')
 
 
-def from_dish_categories(dish_categories, language: str) -> ReplyKeyboardMarkup:
+def from_dish_categories(language: str) -> ReplyKeyboardMarkup:
     categories_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    categories_keyboard.add(get_string('catalog.cart', language), get_string('catalog.make_order', language))
-    if language == 'uz':
-        names = [category.name_uz for category in dish_categories]
-    else:
-        names = [category.name for category in dish_categories]
-    categories_keyboard.add(*names)
+    categories_keyboard.add(get_string('catalog.make_order', language))
     categories_keyboard.add(get_string('go_back', language))
     return categories_keyboard
 

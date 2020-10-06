@@ -122,9 +122,6 @@ def from_order(order: Order, language: str, total: int) -> str:
                                                 sum=_format_number(order_item.count * dish.price * currency_value),
                                                 sum_str=get_string('sum', language))
         order_content += order_item_str + '\n'
-    order_content += "<b>{}</b>: {} {}".format(get_string('cart.summary', language),
-                                               _format_number(total * currency_value),
-                                               get_string('sum', language))
     if not order.delivery_price and order.address_txt:
         order_content += '\n\n'
         order_content += '<i>{}</i>'.format(get_string('delivery_price_without_location', language))
@@ -139,7 +136,7 @@ def from_order(order: Order, language: str, total: int) -> str:
     return order_content
 
 
-def from_order_notification(order: Order, total_sum):
+def from_order_notification(order: Order, total_sum, count_orders):
     order_content = "<b>Новый заказ! #{}</b>".format(order.id)
     order_content += '\n\n'
     order_content += '<b>Номер телефона:</b> {}\n'.format(order.phone_number)
@@ -149,29 +146,11 @@ def from_order_notification(order: Order, total_sum):
         order_content += '<b>Адрес:</b> {}'.format(order.address_txt)
     elif order.location:
         order_content += '<b>Адрес:</b> {}'.format(order.location.address)
-    order_content += '\n\n\U0001F6D2 Корзина:\n'
-    order_item_tmpl = '<b>{counter}. {name}</b>\n    {count} x {price} = {sum} сум\n'
-    order_items = order.order_items.all()
-    grouped_order_items = {}
-    categories_list = [oi.dish.category for oi in order_items]
-    categories_list = list(set(categories_list))
-    for category in categories_list:
-        order_items_by_category = list(filter(lambda oi: oi.dish.category_id == category.id, order_items))
-        grouped_order_items[category.name] = order_items_by_category
-    counter = 0
-    for oi in order_items:
-        counter += 1
-        group_content = '\n'
-        group_content += order_item_tmpl.format(counter=counter,
-                                               name=oi.dish.name,
-                                               count=oi.count,
-                                               price=_format_number(oi.dish.price),
-                                               sum=_format_number(oi.dish.price * oi.count))
-        order_content += group_content
-    order_content += "\n<b>Итого: </b>: {} сум".format(_format_number(order.total_amount))
-    if order.delivery_price:
-        order_content += '\n\n'
-        order_content += '<b>Стоимость доставки</b>: {} сум'.format(_format_number(order.delivery_price))
+    mod_ten = (count_orders % 10)
+    if mod_ten != 0:
+        order_content += '<b>Всего заказов:</b> {}'.format(count_orders)
+    elif mod_ten == 0:
+        order_content += '<b>Заказ бесплатный!</b>'
     return order_content
 
 

@@ -27,7 +27,7 @@ def back_to_the_catalog(chat_id, language, message_text=None, parent_category=No
     if parent_category:
         catalog_message = strings.from_category_name(parent_category, language)
         categories = parent_category.get_siblings(include_self=True).all()
-        category_keyboard = keyboards.from_dish_categories(categories, language)
+        category_keyboard = keyboards.from_dish_categories(language)
         bot.send_message(chat_id, catalog_message, reply_markup=category_keyboard)
         if parent_category.parent:
             bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor, parent_category=parent_category.parent)
@@ -35,7 +35,7 @@ def back_to_the_catalog(chat_id, language, message_text=None, parent_category=No
             bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor)
         return
     categories = dishservice.get_parent_categories(sort_by_number=True)
-    category_keyboard = keyboards.from_dish_categories(categories, language)
+    category_keyboard = keyboards.from_dish_categories(language)
     bot.send_message(chat_id, catalog_message, reply_markup=category_keyboard)
     bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor)
 
@@ -168,25 +168,20 @@ def catalog_processor(message: Message, **kwargs):
         if not category:
             error()
             return
-        if category.get_children().count() > 0:
+        if category.get_children().count() == 0:
             categories = category.get_children().all()
             catalog_message = strings.from_category_name(category, language)
-            category_keyboard = keyboards.from_dish_categories(categories, language)
+            category_keyboard = keyboards.from_dish_categories(language)
             send_category(category, catalog_message, category_keyboard)
             bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor, parent_category=category)
-        elif category.dishes.count() > 0:
+        elif category.dishes.count() == 0:
             dishes = category.dishes.filter(Dish.is_hidden == False).order_by(Dish.number.asc())
             dish_message = strings.get_string('catalog.choose_dish', language)
             dishes_keyboard = keyboards.from_dishes(dishes, language)
             send_category(category, dish_message, dishes_keyboard)
             bot.register_next_step_handler_by_chat_id(chat_id, choose_dish_processor, category=category)
         else:
-            empty_message = strings.get_string('catalog.empty', language)
-            bot.send_message(chat_id, empty_message)
-            if category.parent:
-                bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor, parent_category=category.parent)
-            else:
-                bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor)
+            bot.register_next_step_handler_by_chat_id(chat_id, choose_dish_processor, category=category)
 
 
 @bot.message_handler(commands=['order'], func=botutils.check_auth)
@@ -197,12 +192,7 @@ def catalog(message: Message):
     language = userservice.get_user_language(user_id)
     bot.send_chat_action(chat_id, 'typing')
     catalog_message = strings.get_string('catalog.start', language)
-    categories = dishservice.get_parent_categories(sort_by_number=True)
-    if len(categories) == 0:
-        empty_message = strings.get_string('catalog.empty', language)
-        bot.send_message(chat_id, empty_message)
-        return
-    category_keyboard = keyboards.from_dish_categories(categories, language)
+    category_keyboard = keyboards.from_dish_categories(language)
     bot.send_message(chat_id, catalog_message, reply_markup=category_keyboard)
     bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor)
 

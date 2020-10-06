@@ -1,8 +1,10 @@
 from application import telegram_bot as bot
+from application import db
 from application.core import orderservice, userservice
 from application.resources import strings, keyboards
 from telebot.types import Message, PreCheckoutQuery
 from .catalog import back_to_the_catalog
+from application.utils import bot as botutils
 from application.core.models import Order
 from .notifications import notify_new_order
 from config import Config
@@ -22,7 +24,8 @@ def pre_checkout_order_query_handler(query: PreCheckoutQuery):
     order_success_message = strings.get_string('order.success', language)
     bot.clear_step_handler_by_chat_id(chat_id)
     back_to_the_catalog(chat_id, language, order_success_message)
-    notify_new_order(order, total)
+    #asdasdasd
+    notify_new_order(order, total, count_orders)
 
 
 def _total_order_sum(order_items) -> int:
@@ -85,12 +88,6 @@ def order_processor(message: Message):
     chat_id = message.chat.id
     user_id = message.from_user.id
     language = userservice.get_user_language(user_id)
-
-    cart = userservice.get_user_cart(user_id)
-    if len(cart) == 0:
-        cart_empty_message = strings.get_string('cart.empty', language)
-        back_to_the_catalog(chat_id, language, cart_empty_message)
-        return
     _to_the_payment_method(chat_id, language, user_id)
 
 
@@ -140,7 +137,7 @@ def payment_method_processor(message: Message):
         error()
         return
     if strings.get_string('go_to_menu', language) in message.text:
-        back_to_the_catalog(chat_id, language)
+        botutils.to_main_menu(chat_id, language)
     elif strings.get_string('go_back', language) in message.text:
         if current_order.shipping_method == Order.ShippingMethods.PICK_UP:
             back_to_the_catalog(chat_id, language)
@@ -200,8 +197,13 @@ def confirmation_processor(message: Message, **kwargs):
         user = userservice.get_user_by_telegram_id(user_id)
         order = orderservice.confirm_order(user_id, user.full_user_name, total)
         order_success_message = strings.get_string('order.success', language)
-        back_to_the_catalog(chat_id, language, order_success_message)
-        notify_new_order(order, total)
+        botutils.to_main_menu(chat_id, language, order_success_message)
+        current_user = userservice.get_user_by_id(user_id)
+        current_user.count_orders += 1
+        db.session.add(current_user)
+        db.session.commit()
+        count_orders = current_user.count_orders
+        notify_new_order(order, total, count_orders)
     elif strings.get_string('order.cancel', language) in message.text:
         order_canceled_message = strings.get_string('order.canceled', language)
         if 'message_id' in kwargs:
