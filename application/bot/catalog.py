@@ -5,6 +5,7 @@ from application.utils import bot as botutils
 from telebot.types import Message
 from application.core import exceptions
 from application.core.models import Dish
+from application.bot.orders import order_processor
 
 
 def check_catalog(message: Message):
@@ -188,13 +189,8 @@ def catalog_processor(message: Message, **kwargs):
 @bot.message_handler(content_types=['text'], func=lambda m: botutils.check_auth(m) and check_catalog(m))
 def catalog(message: Message):
     chat_id = message.chat.id
-    user_id = message.from_user.id
-    language = userservice.get_user_language(user_id)
     bot.send_chat_action(chat_id, 'typing')
-    catalog_message = strings.get_string('catalog.start', language)
-    category_keyboard = keyboards.from_dish_categories(language)
-    bot.send_message(chat_id, catalog_message, reply_markup=category_keyboard)
-    bot.register_next_step_handler_by_chat_id(chat_id, catalog_processor)
+    order_processor(message)
 
 
 from . import cart, orders

@@ -3,7 +3,7 @@ from application import db
 from application.core import orderservice, userservice
 from application.resources import strings, keyboards
 from telebot.types import Message, PreCheckoutQuery
-from .catalog import back_to_the_catalog
+#from .catalog import back_to_the_catalog
 from application.utils import bot as botutils
 from application.core.models import Order
 from .notifications import notify_new_order
@@ -213,6 +213,6 @@ def confirmation_processor(message: Message, **kwargs):
         if 'message_id' in kwargs:
             invoice_message_id = kwargs.get('message_id')
             bot.delete_message(chat_id, invoice_message_id)
-        back_to_the_catalog(chat_id, language, order_canceled_message)
+        botutils.to_main_menu(chat_id, language, order_canceled_message)
     else:
         error()
