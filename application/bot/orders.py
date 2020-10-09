@@ -24,7 +24,6 @@ def pre_checkout_order_query_handler(query: PreCheckoutQuery):
     order_success_message = strings.get_string('order.success', language)
     bot.clear_step_handler_by_chat_id(chat_id)
     back_to_the_catalog(chat_id, language, order_success_message)
-    #asdasdasd
     notify_new_order(order, total, count_orders)
 
 
@@ -88,7 +87,12 @@ def order_processor(message: Message):
     chat_id = message.chat.id
     user_id = message.from_user.id
     language = userservice.get_user_language(user_id)
-    _to_the_payment_method(chat_id, language, user_id)
+    orderservice.make_an_order(user_id)
+    orderservice.set_shipping_method(user_id, Order.ShippingMethods.PICK_UP)
+    orderservice.set_payment_method(user_id, Order.PaymentMethods.CASH)
+    orderservice.set_phone_number(user_id)
+    current_order = orderservice.get_current_order_by_user(user_id)
+    _to_the_confirmation(chat_id, current_order, language)
 
 
 def shipping_method_processor(message: Message):
@@ -130,7 +134,7 @@ def payment_method_processor(message: Message):
         bot.register_next_step_handler_by_chat_id(chat_id, payment_method_processor)
 
     def phone_number():
-        current_order = orderservice.set_phone_number(user_id, '')
+        current_order = orderservice.set_phone_number(user_id)
         _to_the_confirmation(chat_id, current_order, language)
 
     if not message.text:

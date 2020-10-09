@@ -1,5 +1,5 @@
 from application import db
-from application.core.models import Order, User, Location
+from application.core.models import Order, User, Location, Dish
 from application.utils import geocode, date
 from . import userservice
 from datetime import datetime, timedelta
@@ -126,7 +126,7 @@ def set_address_by_map_location(user_id: int, map_location: tuple) -> bool:
     return True
 
 
-def set_phone_number(user_id: int, phone_number: str) -> Order:
+def set_phone_number(user_id: int) -> Order:
     current_user = userservice.get_user_by_id(user_id)
     current_order = get_current_order_by_user(user_id)
     current_order.phone_number = current_user.phone_number
@@ -145,7 +145,16 @@ def confirm_order(user_id: int, user_name, total_amount: float):
     current_order.confirmed = True
     current_order.confirmation_date = datetime.utcnow()
     current_order.user_name = user_name
+    reduce_dish_count(user_id)
     current_order.total_amount = total_amount
     userservice.clear_user_cart(user_id)
     db.session.commit()
     return current_order
+
+
+def reduce_dish_count(user_id):
+    cart = userservice.get_user_cart(user_id)
+    for cart_item in cart:
+        dish_in_cart = Dish.query.get(cart_item.dish.id)
+        dish_in_cart.quantity = dish_in_cart.quantity - cart_item.count
+    db.session.commit()
