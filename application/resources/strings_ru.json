@@ -84,5 +84,6 @@
   "notifications.accept": "Принять заказ",
   "notifications.cancel": "Отменить заказ",
   "notifications.accepted": "Ваш заказ обработан✅",
-  "notifications.canceled": "Ваш заказ отменён❌"
+  "notifications.canceled": "Ваш заказ отменён❌",
+  "notifications.wait": "Ваш заказ передан на обработку, ждите ответ баристы.☕️"
 }

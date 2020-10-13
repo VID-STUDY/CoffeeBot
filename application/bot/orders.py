@@ -200,7 +200,7 @@ def confirmation_processor(message: Message, **kwargs):
         total = kwargs.get('total')
         user = userservice.get_user_by_telegram_id(user_id)
         order = orderservice.confirm_order(user_id, user.full_user_name, total)
-        botutils.to_main_menu(chat_id, language)
+        botutils.to_main_menu(chat_id, language, strings.get_string('notifications.wait'))
         current_user = userservice.get_user_by_id(user_id)
         count_orders = current_user.count_orders
         notify_new_order(order, total, count_orders)
