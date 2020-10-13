@@ -28,4 +28,4 @@ def checker(message: Message):
 def coffee_handler(message: Message):
     chat_id = message.chat.id
     user_id = message.from_user.id
-    bot.register_next_step_handler_by_chat_id(chat_id, order_processor(message))
+    order_processor(message)

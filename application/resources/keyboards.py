@@ -1,4 +1,4 @@
-from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 from application.resources.strings import get_string, from_order_shipping_method, from_order_payment_method
 from application.core.models import Order
 
@@ -26,9 +26,9 @@ _go_back_ru = ReplyKeyboardMarkup(resize_keyboard=True)
 _go_back_ru.add(get_string('go_back'))
 _keyboards_ru['go_back'] = _go_back_ru
 
-_dish_keyboard_ru = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+_dish_keyboard_ru = ReplyKeyboardMarkup(row_width=3)
 _dish_keyboard_ru.add(*[str(x) for x in list(range(1, 10))])
-_dish_keyboard_ru.add(get_string('catalog.cart'), get_string('go_back'))
+_dish_keyboard_ru.add(get_string('go_back'))
 _keyboards_ru['catalog.dish_keyboard'] = _dish_keyboard_ru
 
 _shipping_methods_keyboard_ru = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)

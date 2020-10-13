@@ -3,7 +3,7 @@ from application import db
 from application.core import orderservice, userservice
 from application.resources import strings, keyboards
 from telebot.types import Message, PreCheckoutQuery
-#from .catalog import back_to_the_catalog
+from .catalog import back_to_the_catalog
 from application.utils import bot as botutils
 from application.core.models import Order
 from .notifications import notify_new_order
@@ -75,7 +75,7 @@ def _to_the_confirmation(chat_id, current_order, language):
         confirmation_keyboard = keyboards.get_keyboard('order.payment_confirmation', language)
         bot.send_message(chat_id, summary_order_message, parse_mode='HTML', reply_markup=confirmation_keyboard)
         invoice = bot.send_invoice(chat_id, title, description, payload, Config.PAYMENT_PROVIDER_TOKEN, currency, prices,
-                         start_parameter)
+                                   start_parameter)
         bot.register_next_step_handler_by_chat_id(chat_id, confirmation_processor, total=total, message_id=invoice.message_id)
         return
     else:
@@ -200,15 +200,12 @@ def confirmation_processor(message: Message, **kwargs):
         total = kwargs.get('total')
         user = userservice.get_user_by_telegram_id(user_id)
         order = orderservice.confirm_order(user_id, user.full_user_name, total)
-        order_success_message = strings.get_string('order.success', language)
-        botutils.to_main_menu(chat_id, language, order_success_message)
+        botutils.to_main_menu(chat_id, language)
         current_user = userservice.get_user_by_id(user_id)
-        current_user.count_orders += 1
-        db.session.add(current_user)
-        db.session.commit()
         count_orders = current_user.count_orders
         notify_new_order(order, total, count_orders)
     elif strings.get_string('order.cancel', language) in message.text:
+        userservice.clear_user_cart(user_id)
         order_canceled_message = strings.get_string('order.canceled', language)
         if 'message_id' in kwargs:
             invoice_message_id = kwargs.get('message_id')

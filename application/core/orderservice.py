@@ -141,20 +141,12 @@ def confirm_order(user_id: int, user_name, total_amount: float):
     :param user_id: User's Telegram-ID
     :return: void
     """
+
     current_order = get_current_order_by_user(user_id)
     current_order.confirmed = True
     current_order.confirmation_date = datetime.utcnow()
     current_order.user_name = user_name
-    reduce_dish_count(user_id)
     current_order.total_amount = total_amount
     userservice.clear_user_cart(user_id)
     db.session.commit()
     return current_order
-
-
-def reduce_dish_count(user_id):
-    cart = userservice.get_user_cart(user_id)
-    for cart_item in cart:
-        dish_in_cart = Dish.query.get(cart_item.dish.id)
-        dish_in_cart.quantity = dish_in_cart.quantity - cart_item.count
-    db.session.commit()

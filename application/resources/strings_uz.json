@@ -69,5 +69,8 @@
     "shipping_method": "Yuk tashish usuli",
     "my_location": "\uD83D\uDDFA Mening joyim",
     "sum": "so'm",
-    "usd": "$"
+    "usd": "$",
+    "policy_text": "Foydalanuvchi shartnomasi bilan tanishib chiqqaningizni tasdiqlang! \nFoydalanuvchi shartnomasini havolani bosish orqali ko'rishingiz mumkin: https://delivera.uz/agreement",
+    "notifications.accept": "Buyurtmani qabul qilish",
+    "notifications.accepted": "Buyurtmangiz qabul qilindi👌"
 }

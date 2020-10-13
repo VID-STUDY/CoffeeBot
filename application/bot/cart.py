@@ -2,7 +2,7 @@ from application import telegram_bot as bot
 from application.core import userservice
 from application.resources import strings, keyboards
 from telebot.types import Message
-#from .catalog import back_to_the_catalog, catalog_processor
+from .catalog import back_to_the_catalog, catalog_processor
 from .orders import order_processor
 
 

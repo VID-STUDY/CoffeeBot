@@ -1,11 +1,11 @@
 from application import telegram_bot as bot
-from application.core import userservice, dishservice
+from application import db
+from application.core import userservice, dishservice, orderservice
 from application.resources import strings, keyboards
 from application.utils import bot as botutils
 from telebot.types import Message
 from application.core import exceptions
-from application.core.models import Dish
-from application.bot.orders import order_processor
+from application.core.models import Dish, Order
 
 
 def check_catalog(message: Message):
@@ -184,13 +184,42 @@ def catalog_processor(message: Message, **kwargs):
         else:
             bot.register_next_step_handler_by_chat_id(chat_id, choose_dish_processor, category=category)
 
+def count_processor(message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    language = userservice.get_user_language(user_id)
+
+    def error():
+        error_message = strings.get_string('catalog.dish_action_error', language)
+        bot.send_message(chat_id, error_message)
+        bot.register_next_step_handler_by_chat_id(chat_id, count_processor)
+
+    if strings.get_string('go_back', language) in message.text:
+        botutils.to_main_menu(chat_id, language)
+        return
+    if not message.text.isdigit() or int(message.text) >= 11 or int(message.text) <= 0:
+        error()
+        return
+    userservice.clear_user_cart(user_id)
+    userservice.add_dish_to_cart(user_id, dishservice.get_dish_by_id(1), int(message.text))
+    orderservice.make_an_order(user_id)
+    orderservice.set_shipping_method(user_id, Order.ShippingMethods.PICK_UP)
+    orderservice.set_payment_method(user_id, Order.PaymentMethods.CASH)
+    orderservice.set_phone_number(user_id)
+    current_order = orderservice.get_current_order_by_user(user_id)
+    _to_the_confirmation(chat_id, current_order, language)
 
 @bot.message_handler(commands=['order'], func=botutils.check_auth)
 @bot.message_handler(content_types=['text'], func=lambda m: botutils.check_auth(m) and check_catalog(m))
 def catalog(message: Message):
     chat_id = message.chat.id
+    user_id = message.from_user.id
+    language = userservice.get_user_language(user_id)
     bot.send_chat_action(chat_id, 'typing')
-    order_processor(message)
-
+    dishes_keyboard = keyboards.get_keyboard('catalog.dish_keyboard')
+    dish_message = strings.get_string('catalog.dish_action_helper', language)
+    bot.send_message(chat_id, dish_message, reply_markup=dishes_keyboard)
+    bot.register_next_step_handler_by_chat_id(chat_id, count_processor)
 
 from . import cart, orders
+from .orders import _to_the_confirmation

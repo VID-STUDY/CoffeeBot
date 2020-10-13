@@ -99,40 +99,8 @@ def from_order(order: Order, language: str, total: int) -> str:
         shipping_method=get_string('shipping_method', language),
         shipping_method_value=from_order_shipping_method(order.shipping_method, language)
     )
-    if order.address_txt:
-        order_content += '<b>{address}:</b> {address_value}'.format(address=get_string('address', language),
-                                                                    address_value=order.address_txt)
-    elif order.location:
-        order_content += '<b>{address}:</b> {address_value}'.format(address=get_string('address', language),
-                                                                    address_value=order.location.address)
-    order_content += '\n\n'
-    order_item_tmpl = '<b>{counter}. {name}</b>\n{count} x {price} = {sum} {sum_str}\n'
-    counter = 0
-    for order_item in order.order_items.all():
-        counter += 1
-        dish = order_item.dish
-        if language == 'uz':
-            dish_name = dish.get_full_name_uz()
-        else:
-            dish_name = dish.get_full_name()
-        order_item_str = order_item_tmpl.format(counter=counter,
-                                                name=dish_name,
-                                                count=order_item.count,
-                                                price=_format_number(dish.price * currency_value),
-                                                sum=_format_number(order_item.count * dish.price * currency_value),
-                                                sum_str=get_string('sum', language))
-        order_content += order_item_str + '\n'
-    if not order.delivery_price and order.address_txt:
-        order_content += '\n\n'
-        order_content += '<i>{}</i>'.format(get_string('delivery_price_without_location', language))
-    if order.delivery_price:
-        order_content += '\n\n'
-        order_content += '<i>{}</i>: {} {}'.format(get_string('delivery_price', language),
-                                                   _format_number(order.delivery_price),
-                                                   get_string('sum', language))
-        order_content += '\n\n'
-        order_content += '<i>{}</i>'.format(get_string('order.delivery_price_helper', language))
-    order_content += '\n\n'
+    order_content += '<b>Количество</b>: {count_value}'.format(
+            count_value=order.order_items.all()[0].count)
     return order_content
 
 
@@ -142,15 +110,10 @@ def from_order_notification(order: Order, total_sum, count_orders):
     order_content += '<b>Номер телефона:</b> {}\n'.format(order.phone_number)
     order_content += '<b>Имя покупателя:</b> {}\n'.format(order.user_name)
     order_content += '<b>Способ оплаты:</b> {}\n'.format(from_order_payment_method(order.payment_method, 'ru'))
-    if order.address_txt:
-        order_content += '<b>Адрес:</b> {}'.format(order.address_txt)
-    elif order.location:
-        order_content += '<b>Адрес:</b> {}'.format(order.location.address)
-    mod_ten = (count_orders % 10)
-    if mod_ten != 0:
-        order_content += '<b>Всего заказов:</b> {}'.format(count_orders)
-    elif mod_ten == 0:
-        order_content += '<b>Заказ бесплатный!</b>'
+    order_content += '<b>Количество</b>: {}\n'.format(order.order_items.all()[0].count)
+    old = count_orders - order.order_items.all()[0].count
+    if int(old / 10) < int(count_orders / 10):
+        order_content += 'Один кофе бесплатный.'
     return order_content
 
 
