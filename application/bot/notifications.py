@@ -26,22 +26,30 @@ def notifications_handler(message: Message):
 
 @telegram_bot.callback_query_handler(func=lambda call: True)
 def notification_callback_query(call):
-    order = orderservice.get_order_by_id(call.data)
-    user_id = order.user_id
-    current_user = userservice.get_user_by_id(user_id)
-    current_user.count_orders += order.order_items.all()[0].count
-    db.session.add(current_user)
-    db.session.commit()
-    telegram_bot.send_message(user_id, strings.get_string('notifications.accepted'))
-    telegram_bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
-    telegram_bot.answer_callback_query(call.id)
+    order = orderservice.get_order_by_id(call.data[6:])
+    if call.data[0:6] == 'accept':
+        user_id = order.user_id
+        current_user = userservice.get_user_by_id(user_id)
+        current_user.count_orders += order.order_items.all()[0].count
+        db.session.add(current_user)
+        db.session.commit()
+        telegram_bot.send_message(user_id, strings.get_string('notifications.accepted'))
+        telegram_bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+        telegram_bot.answer_callback_query(call.id)
+    else:
+        user_id = order.user_id
+        userservice.clear_user_cart(user_id)
+        telegram_bot.send_message(user_id, strings.get_string('notifications.canceled'))
+        telegram_bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+        telegram_bot.answer_callback_query(call.id)
 
 
 def notify_new_order(order: Order, total_sum: float, count_orders: int):
     notification_chats = notifyservice.get_all_notification_chats()
     notification_message = strings.from_order_notification(order, total_sum, count_orders)
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton(strings.get_string('notifications.accept'), callback_data=order.id))
+    markup.add(InlineKeyboardButton(strings.get_string('notifications.accept'), callback_data='accept' + str(order.id)))
+    markup.add(InlineKeyboardButton(strings.get_string('notifications.cancel'), callback_data='cancel' + str(order.id)))
     for chat in notification_chats:
         try:
             telegram_bot.send_message(chat.chat_id, notification_message, reply_markup=markup, parse_mode='HTML')
